@@ -1,0 +1,16 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ""   # empty → nginx proxy handles /api routing
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  backend:
+    image: ringbearer:latest   # replace with your Java backend image
+    ports:
+      - "8080:8080"
