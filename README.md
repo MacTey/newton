@@ -32,19 +32,17 @@ All API calls go through `src/api/client.ts`. The base URL is controlled by the 
 
 Vite proxies `/api` requests to `http://ringbearer` (configured in `vite.config.ts`), avoiding CORS issues in development.
 
-To add a new API module, create a file under `src/api/` that uses the `api` client:
-
-```ts
-import { api } from './client';
-
-export const getItems = () => api.get<Item[]>('/api/items');
-```
-
 ## Current Features
 
-- **Home page** — fetches and displays a list of employees from `GET /api/employees`
-  - Columns: Employee ID, First Name, Last Name
-  - Handles loading, error, and empty states
+- **Split-panel layout** — employee list on the left, detail panel on the right
+- **Employee list** — fetches from `GET /api/employees`, displays Employee ID, First Name, Last Name
+- **Employee snapshot** — clicking an employee fetches `GET /api/employees/{id}/snapshot` and displays:
+  - Name, job title, and department header
+  - All scalar fields in a key/value table
+  - Skills as blue tags
+  - Certifications as green tags
+  - Snapshot timestamp
+- **Light/dark mode toggle** — persisted in `localStorage`
 
 ## Scripts
 
