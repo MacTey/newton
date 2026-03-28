@@ -1,6 +1,6 @@
 # Newton
 
-A React application built with Vite, TypeScript, and Tailwind CSS. Designed to consume data from a Java API backend.
+A React application built with Vite, TypeScript, and Tailwind CSS. Designed to consume data from a Java API backend at `http://ringbearer`.
 
 ## Tech Stack
 
@@ -18,8 +18,8 @@ A React application built with Vite, TypeScript, and Tailwind CSS. Designed to c
 2. Configure the API URL:
    ```bash
    cp .env.local.example .env.local
-   # Edit .env.local and set VITE_API_BASE_URL to your Java API
    ```
+   `.env.local` is already configured with `VITE_API_BASE_URL=` (empty, uses Vite proxy).
 
 3. Start the dev server:
    ```bash
@@ -28,7 +28,9 @@ A React application built with Vite, TypeScript, and Tailwind CSS. Designed to c
 
 ## API Integration
 
-All API calls go through `src/api/client.ts`. The base URL is controlled by the `VITE_API_BASE_URL` environment variable (defaults to `http://localhost:8080`).
+All API calls go through `src/api/client.ts`. The base URL is controlled by the `VITE_API_BASE_URL` environment variable.
+
+Vite proxies `/api` requests to `http://ringbearer` (configured in `vite.config.ts`), avoiding CORS issues in development.
 
 To add a new API module, create a file under `src/api/` that uses the `api` client:
 
@@ -37,6 +39,12 @@ import { api } from './client';
 
 export const getItems = () => api.get<Item[]>('/api/items');
 ```
+
+## Current Features
+
+- **Home page** — fetches and displays a list of employees from `GET /api/employees`
+  - Columns: Employee ID, First Name, Last Name
+  - Handles loading, error, and empty states
 
 ## Scripts
 
