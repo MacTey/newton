@@ -8,7 +8,12 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`API error ${response.status}: ${response.statusText}`);
+    let message = `API error ${response.status}: ${response.statusText}`;
+    try {
+      const body = await response.json();
+      if (Array.isArray(body.fieldErrors)) message = body.fieldErrors.join('\n');
+    } catch { /* ignore */ }
+    throw new Error(message);
   }
 
   return response.json() as Promise<T>;

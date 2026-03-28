@@ -8,7 +8,15 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      '/api': 'http://ringbearer',
+      '/api': {
+        target: 'http://ringbearer',
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.removeHeader('origin');
+          });
+        },
+      },
     },
   },
   test: {
