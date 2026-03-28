@@ -1,6 +1,6 @@
 # Newton
 
-A React application built with Vite, TypeScript, and Tailwind CSS. Designed to consume data from a Java API backend.
+A React application built with Vite, TypeScript, and Tailwind CSS. Designed to consume data from a Java API backend at `http://ringbearer`.
 
 ## Tech Stack
 
@@ -18,8 +18,8 @@ A React application built with Vite, TypeScript, and Tailwind CSS. Designed to c
 2. Configure the API URL:
    ```bash
    cp .env.local.example .env.local
-   # Edit .env.local and set VITE_API_BASE_URL to your Java API
    ```
+   `.env.local` is already configured with `VITE_API_BASE_URL=` (empty, uses Vite proxy).
 
 3. Start the dev server:
    ```bash
@@ -28,15 +28,21 @@ A React application built with Vite, TypeScript, and Tailwind CSS. Designed to c
 
 ## API Integration
 
-All API calls go through `src/api/client.ts`. The base URL is controlled by the `VITE_API_BASE_URL` environment variable (defaults to `http://localhost:8080`).
+All API calls go through `src/api/client.ts`. The base URL is controlled by the `VITE_API_BASE_URL` environment variable.
 
-To add a new API module, create a file under `src/api/` that uses the `api` client:
+Vite proxies `/api` requests to `http://ringbearer` (configured in `vite.config.ts`), avoiding CORS issues in development.
 
-```ts
-import { api } from './client';
+## Current Features
 
-export const getItems = () => api.get<Item[]>('/api/items');
-```
+- **Split-panel layout** — employee list on the left, detail panel on the right
+- **Employee list** — fetches from `GET /api/employees`, displays Employee ID, First Name, Last Name
+- **Employee snapshot** — clicking an employee fetches `GET /api/employees/{id}/snapshot` and displays:
+  - Name, job title, and department header
+  - All scalar fields in a key/value table
+  - Skills as blue tags
+  - Certifications as green tags
+  - Snapshot timestamp
+- **Light/dark mode toggle** — persisted in `localStorage`
 
 ## Scripts
 
