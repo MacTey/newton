@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from './api/client';
 import ThemeToggle from './components/ThemeToggle';
+import logo from './assets/logo.png';
 import './App.css';
 
 interface Employee {
@@ -73,7 +74,8 @@ function App() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col">
       <header className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">Newton</h1>
+          <img src={logo} alt="Logo" className="h-10 w-auto" />
+          <h1 className="text-2xl font-bold tracking-tight">White Tree Talent</h1>
           <ThemeToggle />
         </div>
       </header>
