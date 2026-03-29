@@ -1,2 +1,13 @@
 @import "tailwindcss";
-@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-sand-50:  #faf7f2;
+  --color-sand-100: #f2ebe0;
+  --color-sand-200: #e5d9c8;
+  --color-sand-300: #d4c4ae;
+  --color-forest-100: #eef4f0;
+  --color-forest-200: #d2e8da;
+  --color-forest-600: #3d6b52;
+  --color-forest-700: #2d5a42;
+  --color-forest-800: #1e3d2c;
+}

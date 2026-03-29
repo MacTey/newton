@@ -30,7 +30,7 @@ When testing components that use `NavLink` or other router hooks, wrap renders i
 
 ## Architecture
 
-React 19 + Vite 7 + TypeScript SPA styled with Tailwind CSS v4 (`@tailwindcss/vite` plugin — no `tailwind.config.js`). Dark mode uses a custom `@variant dark (&:where(.dark, .dark *))` rule driven by the `.dark` class on `<html>`.
+React 19 + Vite 7 + TypeScript SPA styled with Tailwind CSS v4 (`@tailwindcss/vite` plugin — no `tailwind.config.js`).
 
 **Routing:** `react-router-dom` v7. `BrowserRouter` wraps the app in `src/main.tsx`. Two routes:
 - `/` → `EmployeeView` (extracted from App.tsx, defined in same file)
@@ -44,9 +44,11 @@ Navigation tabs live in the persistent header in `App.tsx` using `NavLink`.
 
 **Attribute editor:** `src/pages/AttributeEditor.tsx` fetches `GET /api/attribute-definitions`. Supports Add (`POST /api/attribute-definitions`) and Edit (`PUT /api/attribute-definitions/:name`) via a modal form. `attributeName` is the primary key and is read-only on edit.
 
-**Vite proxy:** `/api` is proxied to `http://ringbearer` with `changeOrigin: true` and the `Origin` header removed on each proxied request (required to avoid 403s from nginx CORS enforcement).
+**Vite proxy:** `/api` is proxied to `http://ringbearer:8080` with `changeOrigin: true` and the `Origin` header removed on each proxied request (required to avoid 403s from nginx CORS enforcement).
 
-**Theming:** `ThemeToggle` component sets the `dark` class on `<html>` and persists to `localStorage`. State is initialized via `useState` lazy initializer (no flicker).
+**Theming:** Custom `@theme` tokens in `src/index.css` define `sand-*` (tan palette) and `forest-*` (green palette). No dark mode. No `tailwind.config.js`.
+
+**Employee detail panel layout:** Structured card (not a dynamic field table). Fields displayed in order: Employee ID, then rows — (First Name, Last Name), (Job Title, Hire Date, Status), (Email, Phone), (Salary — blurred until hover). `source_system` is not shown. In edit mode each field renders as an inline input/select.
 
 ## Hooks
 
