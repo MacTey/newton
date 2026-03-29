@@ -29,22 +29,14 @@ const SNAPSHOT = {
   first_name: 'Ada',
   last_name: 'Lovelace',
   job_title: 'Engineer',
-  department: 'R&D',
   status: 'ACTIVE',
   email: 'ada@example.com',
   phone: null,
-  location: 'London',
   hire_date: '2020-01-01',
   salary: 90000,
   manager_id: null,
-  manager_name: null,
-  race: 'Unknown',
-  skills: ['TypeScript', 'React'],
-  certifications: ['AWS'],
-  snapshot_metadata: {
-    generated_at: '2024-01-01T00:00:00Z',
-    snapshot_time: '2024-01-01T00:00:00Z',
-  },
+  source_system: 'HR',
+  attributes: [],
 };
 
 beforeEach(() => {
@@ -98,7 +90,7 @@ describe('App', () => {
     expect(mockGet).toHaveBeenCalledWith('/api/employees/1/snapshot');
   });
 
-  it('renders snapshot fields after selecting an employee', async () => {
+  it('renders structured card fields after selecting an employee', async () => {
     mockGet
       .mockResolvedValueOnce(EMPLOYEE_LIST)
       .mockResolvedValueOnce(SNAPSHOT);
@@ -107,45 +99,28 @@ describe('App', () => {
     await screen.findByText('Ada Lovelace');
     await userEvent.click(screen.getByText('Ada Lovelace'));
 
-    expect(await screen.findByText('Engineer · R&D')).toBeInTheDocument();
-  });
+    // Wait for the detail panel to appear (hire date is unique on the page)
+    expect(await screen.findByText('2020-01-01')).toBeInTheDocument();
 
-  it('does not render snapshot_metadata as a table row', async () => {
-    mockGet
-      .mockResolvedValueOnce(EMPLOYEE_LIST)
-      .mockResolvedValueOnce(SNAPSHOT);
+    // Employee ID section
+    expect(screen.getByText('Employee ID', { selector: 'p' })).toBeInTheDocument();
+    // The monospace <p> in the card; the list also shows '1' in a <span>, so be specific
+    expect(screen.getByText('1', { selector: 'p' })).toBeInTheDocument();
 
-    render(<MemoryRouter><App /></MemoryRouter>);
-    await screen.findByText('Ada Lovelace');
-    await userEvent.click(screen.getByText('Ada Lovelace'));
+    // Name fields (rendered as field labels and values in the card)
+    expect(screen.getByText('First Name', { selector: 'p' })).toBeInTheDocument();
+    expect(screen.getByText('Last Name', { selector: 'p' })).toBeInTheDocument();
 
-    await screen.findByText('Engineer · R&D');
-    expect(screen.queryByText('snapshot metadata')).not.toBeInTheDocument();
-  });
+    // Job Title, Hire Date, Status
+    expect(screen.getByText('Job Title', { selector: 'p' })).toBeInTheDocument();
+    expect(screen.getByText('ACTIVE')).toBeInTheDocument();
 
-  it('renders skills as tags', async () => {
-    mockGet
-      .mockResolvedValueOnce(EMPLOYEE_LIST)
-      .mockResolvedValueOnce(SNAPSHOT);
+    // Email, Phone
+    expect(screen.getByText('ada@example.com')).toBeInTheDocument();
+    expect(screen.getByText('Phone', { selector: 'p' })).toBeInTheDocument();
 
-    render(<MemoryRouter><App /></MemoryRouter>);
-    await screen.findByText('Ada Lovelace');
-    await userEvent.click(screen.getByText('Ada Lovelace'));
-
-    expect(await screen.findByText('TypeScript')).toBeInTheDocument();
-    expect(screen.getByText('React')).toBeInTheDocument();
-  });
-
-  it('renders certifications as tags', async () => {
-    mockGet
-      .mockResolvedValueOnce(EMPLOYEE_LIST)
-      .mockResolvedValueOnce(SNAPSHOT);
-
-    render(<MemoryRouter><App /></MemoryRouter>);
-    await screen.findByText('Ada Lovelace');
-    await userEvent.click(screen.getByText('Ada Lovelace'));
-
-    expect(await screen.findByText('AWS')).toBeInTheDocument();
+    // Salary label
+    expect(screen.getByText('Salary', { selector: 'p' })).toBeInTheDocument();
   });
 
   it('renders em dash for null phone field', async () => {
@@ -157,8 +132,73 @@ describe('App', () => {
     await screen.findByText('Ada Lovelace');
     await userEvent.click(screen.getByText('Ada Lovelace'));
 
-    await screen.findByText('Engineer · R&D');
+    await screen.findByText('2020-01-01');
     expect(screen.getAllByText('—').length).toBeGreaterThan(0);
+  });
+
+  it('does not render source_system in the detail card', async () => {
+    mockGet
+      .mockResolvedValueOnce(EMPLOYEE_LIST)
+      .mockResolvedValueOnce(SNAPSHOT);
+
+    render(<MemoryRouter><App /></MemoryRouter>);
+    await screen.findByText('Ada Lovelace');
+    await userEvent.click(screen.getByText('Ada Lovelace'));
+
+    await screen.findByText('2020-01-01');
+    expect(screen.queryByText('Source System', { exact: false })).not.toBeInTheDocument();
+    expect(screen.queryByText('source system', { exact: false })).not.toBeInTheDocument();
+  });
+
+  it('salary value has blur-sm class in read mode', async () => {
+    mockGet
+      .mockResolvedValueOnce(EMPLOYEE_LIST)
+      .mockResolvedValueOnce(SNAPSHOT);
+
+    render(<MemoryRouter><App /></MemoryRouter>);
+    await screen.findByText('Ada Lovelace');
+    await userEvent.click(screen.getByText('Ada Lovelace'));
+
+    await screen.findByText('2020-01-01');
+    const salaryValue = screen.getByText('90000');
+    expect(salaryValue).toHaveClass('blur-sm');
+  });
+
+  it('renders attributes as tags when snapshot has multi-valued attributes', async () => {
+    const snapshotWithAttributes = {
+      ...SNAPSHOT,
+      attributes: [
+        { attribute_name: 'skills', attribute_value: 'TypeScript', value_position: 1, is_multi_valued: true },
+        { attribute_name: 'skills', attribute_value: 'React', value_position: 2, is_multi_valued: true },
+        { attribute_name: 'certifications', attribute_value: 'AWS', value_position: 1, is_multi_valued: true },
+      ],
+    };
+
+    mockGet
+      .mockResolvedValueOnce(EMPLOYEE_LIST)
+      .mockResolvedValueOnce(snapshotWithAttributes);
+
+    render(<MemoryRouter><App /></MemoryRouter>);
+    await screen.findByText('Ada Lovelace');
+    await userEvent.click(screen.getByText('Ada Lovelace'));
+
+    expect(await screen.findByText('TypeScript')).toBeInTheDocument();
+    expect(screen.getByText('React')).toBeInTheDocument();
+    expect(screen.getByText('AWS')).toBeInTheDocument();
+  });
+
+  it('does not render attributes section when snapshot.attributes is empty', async () => {
+    mockGet
+      .mockResolvedValueOnce(EMPLOYEE_LIST)
+      .mockResolvedValueOnce(SNAPSHOT);
+
+    render(<MemoryRouter><App /></MemoryRouter>);
+    await screen.findByText('Ada Lovelace');
+    await userEvent.click(screen.getByText('Ada Lovelace'));
+
+    await screen.findByText('2020-01-01');
+    // The nav link "Attributes" is always present; check the section <h3> is absent
+    expect(screen.queryByRole('heading', { name: 'Attributes', level: 3 })).not.toBeInTheDocument();
   });
 
   it('shows detail error when snapshot fetch fails', async () => {
@@ -176,7 +216,7 @@ describe('App', () => {
 
 // ---------------------------------------------------------------------------
 // Helper: render the app, wait for the employee list, select Ada, wait for
-// her snapshot, then return so the calling test can proceed.
+// the detail panel to appear (indicated by the job title in the panel header).
 // ---------------------------------------------------------------------------
 async function renderAndSelectAda() {
   mockGet
@@ -185,7 +225,8 @@ async function renderAndSelectAda() {
   render(<MemoryRouter><App /></MemoryRouter>);
   await screen.findByText('Ada Lovelace');
   await userEvent.click(screen.getByText('Ada Lovelace'));
-  await screen.findByText('Engineer · R&D');
+  // Wait for detail panel — hire date is unique on the page
+  await screen.findByText('2020-01-01');
 }
 
 // ---------------------------------------------------------------------------
@@ -198,25 +239,25 @@ async function renderAndOpenAddModal() {
   render(<MemoryRouter><App /></MemoryRouter>);
   await screen.findByText('Ada Lovelace');
   await userEvent.click(screen.getByRole('button', { name: '+ Add' }));
-  await screen.findByText('Add Employee');
+  await screen.findByText('New Employee');
 }
 
 describe('Add Employee modal', () => {
   it('opens when the + Add button is clicked', async () => {
     await renderAndOpenAddModal();
-    expect(screen.getByText('Add Employee')).toBeInTheDocument();
+    expect(screen.getByText('New Employee')).toBeInTheDocument();
   });
 
   it('closes when the Cancel button is clicked', async () => {
     await renderAndOpenAddModal();
     await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(screen.queryByText('Add Employee')).not.toBeInTheDocument();
+    expect(screen.queryByText('New Employee')).not.toBeInTheDocument();
   });
 
   it('closes when the × button is clicked', async () => {
     await renderAndOpenAddModal();
     await userEvent.click(screen.getByRole('button', { name: 'Close' }));
-    expect(screen.queryByText('Add Employee')).not.toBeInTheDocument();
+    expect(screen.queryByText('New Employee')).not.toBeInTheDocument();
   });
 
   it('shows validation error when required fields are empty', async () => {
@@ -312,7 +353,7 @@ describe('Add Employee modal', () => {
 
     // Modal should disappear
     expect(await screen.findByText('Ada Lovelace')).toBeInTheDocument();
-    expect(screen.queryByText('Add Employee')).not.toBeInTheDocument();
+    expect(screen.queryByText('New Employee')).not.toBeInTheDocument();
     // employees were re-fetched
     expect(mockGet).toHaveBeenLastCalledWith('/api/employees');
   });
@@ -336,7 +377,7 @@ describe('Add Employee modal', () => {
 
     expect(await screen.findByText('Server error')).toBeInTheDocument();
     // Modal must still be visible
-    expect(screen.getByText('Add Employee')).toBeInTheDocument();
+    expect(screen.getByText('New Employee')).toBeInTheDocument();
   });
 
   it('defaults status select to ACTIVE', async () => {
@@ -373,13 +414,51 @@ describe('In-place Edit', () => {
     expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
   });
 
-  it('renders text inputs for editable fields after clicking Edit', async () => {
+  it('renders text inputs for first_name and last_name in edit mode', async () => {
     await renderAndSelectAda();
     await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
-    // first_name becomes an input whose current value is 'Ada'
     expect(screen.getByDisplayValue('Ada')).toBeInTheDocument();
-    // last_name becomes an input whose current value is 'Lovelace'
     expect(screen.getByDisplayValue('Lovelace')).toBeInTheDocument();
+  });
+
+  it('renders text input for email in edit mode', async () => {
+    await renderAndSelectAda();
+    await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    expect(screen.getByDisplayValue('ada@example.com')).toBeInTheDocument();
+  });
+
+  it('renders text input for job_title in edit mode', async () => {
+    await renderAndSelectAda();
+    await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    expect(screen.getByDisplayValue('Engineer')).toBeInTheDocument();
+  });
+
+  it('renders date input for hire_date in edit mode', async () => {
+    await renderAndSelectAda();
+    await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    const hireDateInput = screen.getByDisplayValue('2020-01-01') as HTMLInputElement;
+    expect(hireDateInput).toBeInTheDocument();
+    expect(hireDateInput.type).toBe('date');
+  });
+
+  it('renders number input for salary in edit mode (not blurred)', async () => {
+    await renderAndSelectAda();
+    await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    const salaryInput = screen.getByDisplayValue('90000') as HTMLInputElement;
+    expect(salaryInput).toBeInTheDocument();
+    expect(salaryInput.type).toBe('number');
+    // The blurred <p> should not be present in edit mode
+    expect(screen.queryByText('90000', { selector: 'p' })).not.toBeInTheDocument();
+  });
+
+  it('renders status select with current value in edit mode', async () => {
+    await renderAndSelectAda();
+    await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    const selects = screen.getAllByRole('combobox');
+    const statusSelect = selects.find(
+      el => (el as HTMLSelectElement).value === 'ACTIVE',
+    );
+    expect(statusSelect).toBeInTheDocument();
   });
 
   it('Cancel exits edit mode without calling api.put', async () => {
@@ -402,7 +481,7 @@ describe('In-place Edit', () => {
     expect(screen.queryByDisplayValue('Changed')).not.toBeInTheDocument();
   });
 
-  it('shows a validation error when a required field is cleared before saving', async () => {
+  it('shows a validation error when first_name is cleared before saving', async () => {
     await renderAndSelectAda();
     await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
     const firstNameInput = screen.getByDisplayValue('Ada');
@@ -488,16 +567,6 @@ describe('In-place Edit', () => {
     expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
   });
 
-  it('shows a status select element with current value in edit mode', async () => {
-    await renderAndSelectAda();
-    await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
-    const selects = screen.getAllByRole('combobox');
-    const statusSelect = selects.find(
-      el => (el as HTMLSelectElement).value === 'ACTIVE',
-    );
-    expect(statusSelect).toBeInTheDocument();
-  });
-
   it('prompts confirm when navigating away with unsaved changes', async () => {
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
     // Need a second snapshot resolved value so Alan's click could proceed
@@ -508,7 +577,7 @@ describe('In-place Edit', () => {
     render(<MemoryRouter><App /></MemoryRouter>);
     await screen.findByText('Ada Lovelace');
     await userEvent.click(screen.getByText('Ada Lovelace'));
-    await screen.findByText('Engineer · R&D');
+    await screen.findByText('2020-01-01');
 
     await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
     // Make a change so hasChanges() returns true
@@ -532,7 +601,7 @@ describe('In-place Edit', () => {
     render(<MemoryRouter><App /></MemoryRouter>);
     await screen.findByText('Ada Lovelace');
     await userEvent.click(screen.getByText('Ada Lovelace'));
-    await screen.findByText('Engineer · R&D');
+    await screen.findByText('2020-01-01');
 
     await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
     const firstNameInput = screen.getByDisplayValue('Ada');
@@ -557,7 +626,7 @@ describe('In-place Edit', () => {
     render(<MemoryRouter><App /></MemoryRouter>);
     await screen.findByText('Ada Lovelace');
     await userEvent.click(screen.getByText('Ada Lovelace'));
-    await screen.findByText('Engineer · R&D');
+    await screen.findByText('2020-01-01');
 
     await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
     const firstNameInput = screen.getByDisplayValue('Ada');
@@ -579,7 +648,7 @@ describe('In-place Edit', () => {
     render(<MemoryRouter><App /></MemoryRouter>);
     await screen.findByText('Ada Lovelace');
     await userEvent.click(screen.getByText('Ada Lovelace'));
-    await screen.findByText('Engineer · R&D');
+    await screen.findByText('2020-01-01');
 
     // Enter and immediately exit edit mode without changing anything
     await userEvent.click(screen.getByRole('button', { name: 'Edit' }));

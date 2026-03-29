@@ -56,7 +56,7 @@ function validate(form: FormState): string | null {
 }
 
 const INPUT_CLASS =
-  'w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400';
+  'w-full rounded-md border border-sand-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-600';
 
 export default function AttributeEditor() {
   const [attrs, setAttrs] = useState<AttributeDefinition[]>([]);
@@ -157,54 +157,54 @@ export default function AttributeEditor() {
 
       {/* Page header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold">Attribute Definitions</h2>
+        <h2 className="text-lg font-semibold text-gray-800">Attribute Definitions</h2>
         <button
           onClick={openAdd}
-          className="text-sm px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+          className="text-sm px-3 py-1.5 rounded-md bg-forest-600 text-white hover:bg-forest-700 transition-colors"
         >
           + Add Attribute
         </button>
       </div>
 
-      {loading && <p className="text-gray-500 dark:text-gray-400 text-sm">Loading...</p>}
+      {loading && <p className="text-gray-500 text-sm">Loading...</p>}
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-800 dark:text-red-300 rounded-lg px-4 py-3 text-sm">
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg px-4 py-3 text-sm">
           {error}
         </div>
       )}
 
       {!loading && !error && attrs.length === 0 && (
-        <p className="text-gray-500 dark:text-gray-400 text-sm">No attribute definitions found.</p>
+        <p className="text-gray-500 text-sm">No attribute definitions found.</p>
       )}
 
       {attrs.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm border border-sand-200 overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 dark:border-gray-700">
-                <th className="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Name</th>
-                <th className="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Type</th>
-                <th className="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Required</th>
-                <th className="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Multi</th>
-                <th className="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Source</th>
-                <th className="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Description</th>
+              <tr className="border-b border-sand-200 bg-sand-50">
+                <th className="px-5 py-3 text-left font-semibold text-gray-600">Name</th>
+                <th className="px-5 py-3 text-left font-semibold text-gray-600">Type</th>
+                <th className="px-5 py-3 text-left font-semibold text-gray-600">Required</th>
+                <th className="px-5 py-3 text-left font-semibold text-gray-600">Multi</th>
+                <th className="px-5 py-3 text-left font-semibold text-gray-600">Source</th>
+                <th className="px-5 py-3 text-left font-semibold text-gray-600">Description</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+            <tbody className="divide-y divide-sand-100">
               {attrs.map((attr) => (
-                <tr key={attr.attributeName} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td className="px-5 py-3 font-mono text-xs">{attr.attributeName}</td>
+                <tr key={attr.attributeName} className="hover:bg-sand-50">
+                  <td className="px-5 py-3 font-mono text-xs text-forest-700">{attr.attributeName}</td>
                   <td className="px-5 py-3">{attr.dataType}</td>
                   <td className="px-5 py-3">{attr.isRequired ? 'Yes' : 'No'}</td>
                   <td className="px-5 py-3">{attr.allowsMultiple ? 'Yes' : 'No'}</td>
                   <td className="px-5 py-3">{attr.sourceSystem}</td>
-                  <td className="px-5 py-3 text-gray-500 dark:text-gray-400">{attr.description || '—'}</td>
+                  <td className="px-5 py-3 text-gray-500">{attr.description || '—'}</td>
                   <td className="px-5 py-3 text-right">
                     <button
                       onClick={() => openEdit(attr)}
-                      className="text-xs px-2.5 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      className="text-xs px-2.5 py-1 rounded border border-sand-300 text-gray-700 hover:bg-sand-100 transition-colors"
                     >
                       Edit
                     </button>
@@ -219,21 +219,21 @@ export default function AttributeEditor() {
       {/* Modal */}
       {modal.open && (
         <div
-          className="fixed inset-0 bg-black/40 dark:bg-black/60 z-40 flex items-center justify-center"
+          className="fixed inset-0 bg-black/40 z-40 flex items-center justify-center"
           onClick={closeModal}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg mx-4 z-50"
+            className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 z-50"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-              <h3 className="text-base font-semibold">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-sand-200">
+              <h3 className="text-base font-semibold text-gray-900">
                 {modal.mode === 'add' ? 'Add Attribute' : 'Edit Attribute'}
               </h3>
               <button
                 onClick={closeModal}
-                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none"
+                className="text-gray-400 hover:text-gray-600 text-xl leading-none"
                 aria-label="Close"
               >
                 &times;
@@ -243,7 +243,7 @@ export default function AttributeEditor() {
             {/* Modal body */}
             <div className="px-6 py-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Attribute Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -257,7 +257,7 @@ export default function AttributeEditor() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Data Type <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -274,7 +274,7 @@ export default function AttributeEditor() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Required
                   </label>
                   <select
@@ -288,7 +288,7 @@ export default function AttributeEditor() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Allows Multiple
                   </label>
                   <select
@@ -303,7 +303,7 @@ export default function AttributeEditor() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Source System
                 </label>
                 <input
@@ -316,7 +316,7 @@ export default function AttributeEditor() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Description
                 </label>
                 <textarea
@@ -329,7 +329,7 @@ export default function AttributeEditor() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Validation Rule
                 </label>
                 <input
@@ -342,25 +342,25 @@ export default function AttributeEditor() {
               </div>
 
               {modal.submitError && (
-                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-800 dark:text-red-300 rounded-lg px-4 py-3 text-sm">
+                <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg px-4 py-3 text-sm">
                   {modal.submitError}
                 </div>
               )}
             </div>
 
             {/* Modal footer */}
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700">
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-sand-200">
               <button
                 onClick={closeModal}
                 disabled={modal.submitting}
-                className="text-sm px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="text-sm px-4 py-2 rounded-md border border-sand-300 text-gray-700 hover:bg-sand-100 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={modal.submitting}
-                className="text-sm px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="text-sm px-4 py-2 rounded-md bg-forest-600 text-white hover:bg-forest-700 transition-colors disabled:opacity-50"
               >
                 {modal.submitting ? 'Saving…' : modal.mode === 'add' ? 'Add' : 'Save'}
               </button>
