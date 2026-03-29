@@ -2,27 +2,33 @@ import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 
 interface AttributeDefinition {
-  name: string;
-  label: string;
-  type: string;
-  required: boolean;
+  attributeName: string;
   description: string;
+  dataType: string;
+  allowsMultiple: boolean;
+  isRequired: boolean;
+  validationRule: string | null;
+  sourceSystem: string;
 }
 
 type FormState = {
-  name: string;
-  label: string;
-  type: string;
-  required: string;
+  attributeName: string;
+  dataType: string;
+  isRequired: string;
+  allowsMultiple: string;
+  sourceSystem: string;
   description: string;
+  validationRule: string;
 };
 
 const EMPTY_FORM: FormState = {
-  name: '',
-  label: '',
-  type: 'text',
-  required: 'false',
+  attributeName: '',
+  dataType: 'string',
+  isRequired: 'false',
+  allowsMultiple: 'false',
+  sourceSystem: '',
   description: '',
+  validationRule: '',
 };
 
 interface ModalState {
@@ -44,9 +50,8 @@ const CLOSED_MODAL: ModalState = {
 };
 
 function validate(form: FormState): string | null {
-  if (!form.name.trim()) return 'Name is required.';
-  if (!form.label.trim()) return 'Label is required.';
-  if (!form.type.trim()) return 'Type is required.';
+  if (!form.attributeName.trim()) return 'Attribute name is required.';
+  if (!form.dataType.trim()) return 'Data type is required.';
   return null;
 }
 
@@ -91,13 +96,15 @@ export default function AttributeEditor() {
     setModal({
       open: true,
       mode: 'edit',
-      editingName: attr.name,
+      editingName: attr.attributeName,
       form: {
-        name: attr.name,
-        label: attr.label,
-        type: attr.type,
-        required: String(attr.required),
+        attributeName: attr.attributeName,
+        dataType: attr.dataType,
+        isRequired: String(attr.isRequired),
+        allowsMultiple: String(attr.allowsMultiple),
+        sourceSystem: attr.sourceSystem ?? '',
         description: attr.description ?? '',
+        validationRule: attr.validationRule ?? '',
       },
       submitError: null,
       submitting: false,
@@ -120,11 +127,13 @@ export default function AttributeEditor() {
     }
 
     const payload = {
-      name: modal.form.name.trim(),
-      label: modal.form.label.trim(),
-      type: modal.form.type.trim(),
-      required: modal.form.required === 'true',
+      attributeName: modal.form.attributeName.trim(),
+      dataType: modal.form.dataType.trim(),
+      isRequired: modal.form.isRequired === 'true',
+      allowsMultiple: modal.form.allowsMultiple === 'true',
+      sourceSystem: modal.form.sourceSystem.trim(),
       description: modal.form.description.trim(),
+      validationRule: modal.form.validationRule.trim() || null,
     };
 
     setModal((prev) => ({ ...prev, submitting: true, submitError: null }));
@@ -175,20 +184,22 @@ export default function AttributeEditor() {
             <thead>
               <tr className="border-b border-gray-100 dark:border-gray-700">
                 <th className="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Name</th>
-                <th className="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Label</th>
                 <th className="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Type</th>
                 <th className="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Required</th>
+                <th className="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Multi</th>
+                <th className="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Source</th>
                 <th className="px-5 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Description</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {attrs.map((attr) => (
-                <tr key={attr.name} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td className="px-5 py-3 font-mono text-xs">{attr.name}</td>
-                  <td className="px-5 py-3">{attr.label}</td>
-                  <td className="px-5 py-3">{attr.type}</td>
-                  <td className="px-5 py-3">{attr.required ? 'Yes' : 'No'}</td>
+                <tr key={attr.attributeName} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <td className="px-5 py-3 font-mono text-xs">{attr.attributeName}</td>
+                  <td className="px-5 py-3">{attr.dataType}</td>
+                  <td className="px-5 py-3">{attr.isRequired ? 'Yes' : 'No'}</td>
+                  <td className="px-5 py-3">{attr.allowsMultiple ? 'Yes' : 'No'}</td>
+                  <td className="px-5 py-3">{attr.sourceSystem}</td>
                   <td className="px-5 py-3 text-gray-500 dark:text-gray-400">{attr.description || '—'}</td>
                   <td className="px-5 py-3 text-right">
                     <button
@@ -233,12 +244,12 @@ export default function AttributeEditor() {
             <div className="px-6 py-5 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Name <span className="text-red-500">*</span>
+                  Attribute Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  value={modal.form.name}
-                  onChange={(e) => handleFieldChange('name', e.target.value)}
+                  value={modal.form.attributeName}
+                  onChange={(e) => handleFieldChange('attributeName', e.target.value)}
                   disabled={modal.mode === 'edit'}
                   className={`${INPUT_CLASS} disabled:opacity-60 disabled:cursor-not-allowed`}
                   placeholder="e.g. department"
@@ -247,46 +258,61 @@ export default function AttributeEditor() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Label <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={modal.form.label}
-                  onChange={(e) => handleFieldChange('label', e.target.value)}
-                  className={INPUT_CLASS}
-                  placeholder="e.g. Department"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Type <span className="text-red-500">*</span>
+                  Data Type <span className="text-red-500">*</span>
                 </label>
                 <select
-                  value={modal.form.type}
-                  onChange={(e) => handleFieldChange('type', e.target.value)}
+                  value={modal.form.dataType}
+                  onChange={(e) => handleFieldChange('dataType', e.target.value)}
                   className={INPUT_CLASS}
                 >
-                  <option value="text">text</option>
+                  <option value="string">string</option>
                   <option value="number">number</option>
                   <option value="date">date</option>
                   <option value="boolean">boolean</option>
-                  <option value="select">select</option>
                 </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Required
+                  </label>
+                  <select
+                    value={modal.form.isRequired}
+                    onChange={(e) => handleFieldChange('isRequired', e.target.value)}
+                    className={INPUT_CLASS}
+                  >
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Allows Multiple
+                  </label>
+                  <select
+                    value={modal.form.allowsMultiple}
+                    onChange={(e) => handleFieldChange('allowsMultiple', e.target.value)}
+                    className={INPUT_CLASS}
+                  >
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Required
+                  Source System
                 </label>
-                <select
-                  value={modal.form.required}
-                  onChange={(e) => handleFieldChange('required', e.target.value)}
+                <input
+                  type="text"
+                  value={modal.form.sourceSystem}
+                  onChange={(e) => handleFieldChange('sourceSystem', e.target.value)}
                   className={INPUT_CLASS}
-                >
-                  <option value="false">No</option>
-                  <option value="true">Yes</option>
-                </select>
+                  placeholder="e.g. HR"
+                />
               </div>
 
               <div>
@@ -294,11 +320,24 @@ export default function AttributeEditor() {
                   Description
                 </label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={modal.form.description}
                   onChange={(e) => handleFieldChange('description', e.target.value)}
                   className={INPUT_CLASS}
                   placeholder="Optional description"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Validation Rule
+                </label>
+                <input
+                  type="text"
+                  value={modal.form.validationRule}
+                  onChange={(e) => handleFieldChange('validationRule', e.target.value)}
+                  className={INPUT_CLASS}
+                  placeholder="Optional validation rule"
                 />
               </div>
 

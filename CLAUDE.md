@@ -38,11 +38,13 @@ React 19 + Vite 7 + TypeScript SPA styled with Tailwind CSS v4 (`@tailwindcss/vi
 
 Navigation tabs live in the persistent header in `App.tsx` using `NavLink`.
 
-**API layer:** `src/api/client.ts` exports a thin `api` object (`get`, `post`, `put`, `delete`) wrapping `fetch`. Base URL from `VITE_API_BASE_URL || ''`. Errors thrown as `Error` with the HTTP status message.
+**API layer:** `src/api/client.ts` exports a thin `api` object (`get`, `post`, `put`, `delete`) wrapping `fetch`. Base URL from `VITE_API_BASE_URL || ''`. On non-2xx responses, parses `body.fieldErrors` (string array) from 400 bodies and joins them into the thrown `Error` message; falls back to the HTTP status message.
 
-**Employee view:** `EmployeeView` in `App.tsx` fetches `GET /api/employees` on mount. Selecting an employee fetches `GET /api/employees/:id/snapshot` and renders the snapshot in a detail panel.
+**Employee view:** `EmployeeView` in `App.tsx` fetches `GET /api/employees` on mount. Selecting an employee fetches `GET /api/employees/:id/snapshot` and renders the snapshot in a detail panel. The panel supports **in-place editing** — an Edit button switches editable fields to inputs; Save calls `PUT /api/employees/:id` and re-fetches both the list and snapshot; Cancel discards changes. A navigation guard (`window.confirm`) fires when switching employees with unsaved changes. `+ Add` opens a modal that calls `POST /api/employees`. Employee IDs are generated server-side (Java); the frontend never sends an `employeeId` in POST payloads.
 
-**Attribute editor:** `src/pages/AttributeEditor.tsx` fetches `GET /api/attribute-definitions`. Supports Add (`POST /api/attribute-definitions`) and Edit (`PUT /api/attribute-definitions/:name`) via a modal form. `name` is the primary key and is read-only on edit.
+**Attribute editor:** `src/pages/AttributeEditor.tsx` fetches `GET /api/attribute-definitions`. Supports Add (`POST /api/attribute-definitions`) and Edit (`PUT /api/attribute-definitions/:name`) via a modal form. `attributeName` is the primary key and is read-only on edit.
+
+**Vite proxy:** `/api` is proxied to `http://ringbearer` with `changeOrigin: true` and the `Origin` header removed on each proxied request (required to avoid 403s from nginx CORS enforcement).
 
 **Theming:** `ThemeToggle` component sets the `dark` class on `<html>` and persists to `localStorage`. State is initialized via `useState` lazy initializer (no flicker).
 

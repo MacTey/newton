@@ -8,7 +8,7 @@ type: project
 
 **Modal backdrop click:** The backdrop is the outermost fixed `div`; the modal panel is its direct child. To click the backdrop without hitting the panel, get the panel via `closest('div[class*="rounded-xl"]')` then access `.parentElement`.
 
-**Select queries:** Use `screen.getAllByRole('combobox')` when multiple selects are present; index 0 = Type, index 1 = Required (as ordered in AttributeEditor).
+**Select queries:** Use `screen.getAllByRole('combobox')` when multiple selects are present; in AttributeEditor: index 0 = dataType, index 1 = isRequired, index 2 = allowsMultiple.
 
 **Submit button label:** "Add" in add mode, "Save" in edit mode, "Saving…" while submitting. Query by exact name to distinguish from other buttons.
 
